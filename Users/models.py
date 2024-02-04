@@ -42,7 +42,7 @@ class User(db.Model):
     email = db.Column(db.String(256), unique=True, nullable=False)
     slug = db.Column(db.String(200), unique=True, nullable=False)
     sex = db.Column(db.Enum(Sex), default=Sex.not_given)
-    weight = db.Column(db.Integer, nullable=True)
+    weight = db.Column(db.Integer(), nullable=True)
     affiliate_id = db.Column(db.String(10), unique=True, default=ShortUUID().random(length=10))
     affiliated_by = db.Column(db.String(10), nullable=True)
     location = db.Column(db.Text(), nullable=True)
@@ -52,3 +52,18 @@ class User(db.Model):
     verify_by_admin = db.Column(db.Boolean(), default=False)
     blood_type = db.Column(db.Enum(BloodType), default=BloodType.Not_given)
     user_type = db.Column(db.Enum(UserType), default=UserType.normal)
+
+
+class Laboratory(db.Model):
+    __tablename__ = 'laboratory'
+    ...
+
+
+class LabBranch(db.Model):
+    __tablename__ = 'laboratory_branch'
+    ...
+
+
+class Address(db.Model):
+    __tablename__ = 'address'
+    ...
