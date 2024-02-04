@@ -69,11 +69,15 @@ class LabBranch(db.Model):
     __tablename__ = 'laboratory_branch'
 
     id = db.Column(db.Integer, primary_key=True)
-    laboratory_id = db.Column(db.String(36), db.ForeignKey('laboratory.id'), nullable=False)
+    laboratory_id = db.Column(db.String(36), db.ForeignKey('laboratory.id', name='fk_laboratory_branch_to_laboratory'),\
+                              nullable=False)
     branch_name = db.Column(db.String(256))
-
+    address = relationship('Address', backref='lab_branch')
 
 class Address(db.Model):
     __tablename__ = 'address'
+
     id = db.Column(db.Integer, primary_key=True)
-    ...
+    lab_branch_id = db.Column(db.String(), db.ForeignKey('laboratory_branch.id', name='fk_address_to_laboratory_branch')\
+                              , nullable=False)
+    address = db.Column(db.Text, nullable=False)
