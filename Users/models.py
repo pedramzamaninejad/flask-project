@@ -1,18 +1,11 @@
-import uuid
 import datetime
+import uuid
 from enum import Enum
+from shortuuid import ShortUUID
 
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-
-
-
-def generated_uuid():
-    import string, random
-    charecters = string.ascii_letters + string.digits
-    short_uuid = ''.join(random.choice(charecters) for _ in range(10))
-    return short_uuid
 
 
 class BloodType(Enum):
@@ -27,9 +20,16 @@ class BloodType(Enum):
     AB_negative = 'AB-'
 
 
-class Type(Enum):
+class UserType(Enum):
     normal = 'N'
     doctor = 'D'
+
+
+class Sex(Enum):
+    not_given = "NG"
+    male = "M"
+    female = "F"
+    non_binary = 'NB'
 
 
 class User(db.Model):
@@ -41,7 +41,8 @@ class User(db.Model):
     phone = db.Column(db.String(11), unique=True, nullable=False)
     email = db.Column(db.String(256), unique=True, nullable=False)
     slug = db.Column(db.String(200), unique=True, nullable=False)
-    affiliate_id = db.Column(db.String(10), unique=True, default=generated_uuid())
+    sex = db.Column(db.Enum(Sex), default=Sex.not_given)
+    affiliate_id = db.Column(db.String(10), unique=True, default=ShortUUID().random(length=10))
     affiliated_by = db.Column(db.String(10), nullable=True)
     location = db.Column(db.Text(), nullable=True)
     address = db.Column(db.Text(), nullable=True)
@@ -49,4 +50,4 @@ class User(db.Model):
     verify = db.Column(db.DateTime(), default=datetime.datetime.now())
     verify_by_admin = db.Column(db.Boolean(), default=False)
     blood_type = db.Column(db.Enum(BloodType), default=BloodType.Not_given)
-    type = db.Column(db.Enum(Type), default=Type.normal)
+    user_type = db.Column(db.Enum(UserType), default=UserType.normal)
