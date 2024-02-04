@@ -36,7 +36,7 @@ class Sex(Enum):
 class User(db.Model):
     __tablename__ = 'users'
     # id
-    id = db.Column(db.String(36), primary_key=True, default=str(uuid.uuid4()))
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(11), unique=True, nullable=False)
@@ -44,7 +44,7 @@ class User(db.Model):
     slug = db.Column(db.String(200), unique=True, nullable=False)
     sex = db.Column(db.Enum(Sex), default=Sex.not_given)
     weight = db.Column(db.Float, nullable=True)
-    affiliate_id = db.Column(db.String(10), unique=True, default=ShortUUID().random(length=10))
+    affiliate_id = db.Column(db.String(10), unique=True, default=lambda: ShortUUID().random(length=10))
     affiliated_by = db.Column(db.String(10), nullable=True)
     location = db.Column(db.Text, nullable=True)
     address = db.Column(db.Text, nullable=True)
@@ -58,15 +58,16 @@ class User(db.Model):
 class Laboratory(db.Model):
     __tablename__ = 'laboratory'
 
-    id = db.Column(db.String(36), primary_key=True, default=str(uuid.uuid4()))
+    id = db.Column(db.String(36), primary_key=True,  default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(256), nullable=False)
     employee = db.Column(db.Integer, nullable=True)
     year_founded = db.Column(db.Date, nullable=False)
-    branches = relationship('laboratory_branch', backref='laboratory', lazy=True)
+    branches = relationship('LabBranch', backref='laboratory')
 
 
 class LabBranch(db.Model):
     __tablename__ = 'laboratory_branch'
+
     id = db.Column(db.Integer, primary_key=True)
     laboratory_id = db.Column(db.String(36), db.ForeignKey('laboratory.id'), nullable=False)
     branch_name = db.Column(db.String(256))
@@ -74,4 +75,5 @@ class LabBranch(db.Model):
 
 class Address(db.Model):
     __tablename__ = 'address'
+    id = db.Column(db.Integer, primary_key=True)
     ...

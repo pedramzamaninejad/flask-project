@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_migrate import Migrate
 
 from config import Config
-from Users.models import db, User
+from Users.models import db, User, Laboratory, LabBranch
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -28,16 +28,45 @@ def home():
     new_weight = request.form.get('weight', None)
     new_password = request.form['password'] + app.config['SECRET_KEY']
 
-    # try:
-    new_user = User(first_name=new_fname, last_name=new_lname, email=new_email, phone=new_phone, \
-                    slug=new_slug, affiliated_by=new_affiliated_by, location=new_location, address=new_address,
-                    password=new_password, user_type=new_user_type, weight=new_weight)
+    try:
+        new_user = User(first_name=new_fname, last_name=new_lname, email=new_email, phone=new_phone, \
+                        slug=new_slug, affiliated_by=new_affiliated_by, location=new_location, address=new_address,
+                        password=new_password, user_type=new_user_type, weight=new_weight)
 
-    db.session.add(new_user)
-    db.session.commit()
-    # except:
-    #     return jsonify({'msg': 'Your form has a problem'}), 400
+        db.session.add(new_user)
+        db.session.commit()
+    except:
+        return jsonify({'msg': 'Your form has a problem'}), 400
     return jsonify({'msg': 'created succesfully'}), 201
+
+@app.route('/create', methods=['POST'])
+def create_lab():
+    from datetime import date
+    new_name = request.form['name']
+    new_employee = request.form.get('employee', None)
+    new_year = request.form['year_founded']
+    year, month, day = map(int, new_year.split('-'))
+    date_obj = date(year, month, day)
+
+    try:
+        new_lab = Laboratory(name=new_name, employee=new_employee, year_founded=date_obj)
+        db.session.add(new_lab)
+        db.session.commit()
+    except:
+        return jsonify({'msg': 'form has a problem'}), 400
+    return jsonify({'msg': 'created succesfully'}), 201
+
+@app.route('/create/<string:lab_id>', methods=['POST'])
+def create_branch(lab_id):
+    new_branch_name = request.form['branch_name']
+
+    try:
+        new_branch = LabBranch(branch_name=new_branch_name, laboratory_id=lab_id)
+        db.session.add(new_branch)
+        db.session.commit()
+    except:
+        return jsonify({'msg': 'It didnt worked'}), 400
+    return jsonify({'msg': 'it worked'}), 201
 
 
 app.app_context().push()
