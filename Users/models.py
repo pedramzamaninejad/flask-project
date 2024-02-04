@@ -1,16 +1,16 @@
 import datetime
 import uuid
 from enum import Enum
-from shortuuid import ShortUUID
 
 from flask_sqlalchemy import SQLAlchemy
+from shortuuid import ShortUUID
 from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 
 
 class BloodType(Enum):
-    Not_given = 'NG'
+    Not_given = 'Not Given'
     A_positive = 'A+'
     A_negative = 'A-'
     B_positive = 'B+'
@@ -22,15 +22,15 @@ class BloodType(Enum):
 
 
 class UserType(Enum):
-    normal = 'N'
-    doctor = 'D'
+    normal = 'Normal'
+    doctor = 'Doctor'
 
 
 class Sex(Enum):
-    not_given = "NG"
-    male = "M"
-    female = "F"
-    non_binary = 'NB'
+    not_given = "Not Given"
+    male = "Male"
+    female = "Female"
+    non_binary = 'Non Binary'
 
 
 class User(db.Model):
@@ -58,7 +58,7 @@ class User(db.Model):
 class Laboratory(db.Model):
     __tablename__ = 'laboratory'
 
-    id = db.Column(db.String(36), primary_key=True,  default=lambda: str(uuid.uuid4()))
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(256), nullable=False)
     employee = db.Column(db.Integer, nullable=True)
     year_founded = db.Column(db.Date, nullable=False)
@@ -69,15 +69,19 @@ class LabBranch(db.Model):
     __tablename__ = 'laboratory_branch'
 
     id = db.Column(db.Integer, primary_key=True)
-    laboratory_id = db.Column(db.String(36), db.ForeignKey('laboratory.id', name='fk_laboratory_branch_to_laboratory'),\
+    laboratory_id = db.Column(db.String(36), db.ForeignKey('laboratory.id', name='fk_laboratory_branch_to_laboratory'), \
                               nullable=False)
     branch_name = db.Column(db.String(256))
-    address = relationship('Address', backref='lab_branch')
+    manager = db.Column(db.String(256), nullable=False)
+    services = db.Column(db.Text)
+    address = relationship('Address', backref='lab_branch', uselist=False)
+
 
 class Address(db.Model):
     __tablename__ = 'address'
 
     id = db.Column(db.Integer, primary_key=True)
-    lab_branch_id = db.Column(db.String(), db.ForeignKey('laboratory_branch.id', name='fk_address_to_laboratory_branch')\
-                              , nullable=False)
+    lab_branch_id = db.Column(db.String(), db.ForeignKey('laboratory_branch.id', name='fk_address_to_laboratory_branch') \
+                              , nullable=False, unique=True)
     address = db.Column(db.Text, nullable=False)
+    location = db.Column(db.String(256), nullable=True)
