@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, template_rendered
 from flask_migrate import Migrate
 
 from config import Config
@@ -15,7 +15,6 @@ migrate.init_app(app, db)
 
 @app.route("/", methods=['POST', 'GET'])
 def home():
-    print(app.config['SECRET_KEY'])
     new_fname = request.form['first_name']
     new_lname = request.form['last_name']
     new_email = request.form['email']
@@ -39,22 +38,29 @@ def home():
         return jsonify({'msg': 'Your form has a problem'}), 400
     return jsonify({'msg': 'created succesfully'}), 201
 
-@app.route('/create', methods=['POST'])
+@app.route('/create', methods=['POST', 'GET'])
 def create_lab():
-    from datetime import date
-    new_name = request.form['name']
-    new_employee = request.form.get('employee', None)
-    new_year = request.form['year_founded']
-    year, month, day = map(int, new_year.split('-'))
-    date_obj = date(year, month, day)
+    if request.method == 'POST':
+        from datetime import date
+        new_name = request.form['name']
+        new_employee = request.form.get('employee', None)
+        new_year = request.form['year_founded']
+        year, month, day = map(int, new_year.split('-'))
+        date_obj = date(year, month, day)
 
-    try:
-        new_lab = Laboratory(name=new_name, employee=new_employee, year_founded=date_obj)
-        db.session.add(new_lab)
-        db.session.commit()
-    except:
-        return jsonify({'msg': 'form has a problem'}), 400
-    return jsonify({'msg': 'created succesfully'}), 201
+        try:
+            new_lab = Laboratory(name=new_name, employee=new_employee, year_founded=date_obj)
+            db.session.add(new_lab)
+            db.session.commit()
+        except:
+            return jsonify({'msg': 'form has a problem'}), 400
+        return jsonify({'msg': 'created succesfully'}), 201
+    elif request.method == 'GET':
+        labs = Laboratory.query.get('9161545b-bc93-4e08-b86f-96422b559213')
+        branch_list = [(branch.id, branch.branch_name) for branch in labs.branches]
+        print(branch_list)
+
+        return jsonify({"msg": "check console"})
 
 @app.route('/create/<string:lab_id>', methods=['POST'])
 def create_branch(lab_id):

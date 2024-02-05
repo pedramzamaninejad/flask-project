@@ -46,8 +46,7 @@ class User(db.Model):
     weight = db.Column(db.Float, nullable=True)
     affiliate_id = db.Column(db.String(10), unique=True, default=lambda: ShortUUID().random(length=10))
     affiliated_by = db.Column(db.String(10), nullable=True)
-    location = db.Column(db.Text, nullable=True)
-    address = db.Column(db.Text, nullable=True)
+    address = relationship('UserAddress', backref='user', uselist=True)
     password = db.Column(db.String(500), nullable=False)
     verify = db.Column(db.DateTime, default=datetime.datetime.now())
     verify_by_admin = db.Column(db.Boolean, default=False)
@@ -61,6 +60,7 @@ class Laboratory(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(256), nullable=False)
     employee = db.Column(db.Integer, nullable=True)
+    email = db.Column(db.String(256), nullable=False)
     year_founded = db.Column(db.Date, nullable=False)
     branches = relationship('LabBranch', backref='laboratory')
 
@@ -73,15 +73,25 @@ class LabBranch(db.Model):
                               nullable=False)
     branch_name = db.Column(db.String(256))
     manager = db.Column(db.String(256), nullable=False)
+    phone = db.Column(db.String(11), nullable=False)
     services = db.Column(db.Text)
-    address = relationship('Address', backref='lab_branch', uselist=False)
+    address = relationship('LabAddress', backref='lab_branch', uselist=False)
 
 
-class Address(db.Model):
-    __tablename__ = 'address'
+class LabAddress(db.Model):
+    __tablename__ = 'laboratory_address'
 
     id = db.Column(db.Integer, primary_key=True)
-    lab_branch_id = db.Column(db.String(), db.ForeignKey('laboratory_branch.id', name='fk_address_to_laboratory_branch') \
+    lab_branch_id = db.Column(db.String, db.ForeignKey('laboratory_branch.id', name='fk_address_to_laboratory_branch') \
                               , nullable=False, unique=True)
+    address = db.Column(db.Text, nullable=False)
+    location = db.Column(db.String(256), nullable=True)
+
+
+class UserAddress(db.Model):
+    __tablename__ = 'user_address'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', name='fk_UserAddress_to_user'), nullable=False)
     address = db.Column(db.Text, nullable=False)
     location = db.Column(db.String(256), nullable=True)
