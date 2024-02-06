@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, template_rendered
 from flask_migrate import Migrate
 
 from config import Config
-from Users.models import db, User, Laboratory, LabBranch
+from Users.models import db, User, Laboratory, LabBranch, UserAddress
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -22,21 +22,21 @@ def home():
     new_slug = new_fname + '-' + new_lname
     new_user_type = request.form.get('user_type', None)
     new_affiliated_by = request.form.get('affiliated_by', None)
-    new_location = request.form.get('location', None)
-    new_address = request.form.get('address', None)
     new_weight = request.form.get('weight', None)
     new_password = request.form['password'] + app.config['SECRET_KEY']
 
-    try:
-        new_user = User(first_name=new_fname, last_name=new_lname, email=new_email, phone=new_phone, \
-                        slug=new_slug, affiliated_by=new_affiliated_by, location=new_location, address=new_address,
-                        password=new_password, user_type=new_user_type, weight=new_weight)
+    # try:
+    new_user = User(first_name=new_fname, last_name=new_lname, email=new_email, phone=new_phone, \
+                    slug=new_slug, affiliated_by=new_affiliated_by, password=new_password, user_type=new_user_type, \
+                    weight=new_weight)
 
-        db.session.add(new_user)
-        db.session.commit()
-    except:
-        return jsonify({'msg': 'Your form has a problem'}), 400
-    return jsonify({'msg': 'created succesfully'}), 201
+    db.session.add(new_user)
+    user = User.query.first()
+    db.session.commit()
+    # except:
+    #     return jsonify({'msg': 'Your form has a problem'}), 400
+    return jsonify({'msg': 'created succesfully', "id": f"{user.id}"}), 201
+
 
 @app.route('/create', methods=['POST', 'GET'])
 def create_lab():
@@ -62,6 +62,7 @@ def create_lab():
 
         return jsonify({"msg": "check console"})
 
+
 @app.route('/create/<string:lab_id>', methods=['POST'])
 def create_branch(lab_id):
     new_branch_name = request.form['branch_name']
@@ -73,6 +74,20 @@ def create_branch(lab_id):
     except:
         return jsonify({'msg': 'It didnt worked'}), 400
     return jsonify({'msg': 'it worked'}), 201
+
+
+@app.route('/user/address/<string:id>', methods=['POST', 'GET'])
+def addres(id):
+    if request.method == 'POST':
+        new_user_id = id
+        new_address = request.form.get('address', None)
+
+        new_user_address = UserAddress(user_id=new_user_id, address=new_address)
+        db.session.add(new_user_address)
+        db.session.commit()
+        return jsonify({'msg': 'It worked'})
+    elif request.method == 'GET':
+        return jsonify({'msg': 'not developed yet'})
 
 
 app.app_context().push()
